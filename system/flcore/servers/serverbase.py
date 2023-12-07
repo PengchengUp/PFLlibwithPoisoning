@@ -55,6 +55,13 @@ class Server(object):
         self.selected_clients = []
         self.train_slow_clients = []
         self.send_slow_clients = []
+        # 
+        self.train_malicious_clients = []
+        self.train_random_clients = []
+        # list of malicious clients
+        self.list_malicious_clients = []
+        self.list_random_clients = []
+        self.benign_clients = []
 
         self.uploaded_weights = []
         self.uploaded_ids = []
@@ -69,6 +76,9 @@ class Server(object):
         self.client_drop_rate = args.client_drop_rate
         self.train_slow_rate = args.train_slow_rate
         self.send_slow_rate = args.send_slow_rate
+        # num of malicious clients
+        self.malicious_num = args.malicious_num
+        self.random_update = args.random_update
 
         self.dlg_eval = args.dlg_eval
         self.dlg_gap = args.dlg_gap
@@ -80,7 +90,7 @@ class Server(object):
         self.fine_tuning_epoch_new = args.fine_tuning_epoch_new
 
     def set_clients(self, clientObj):
-        for i, train_slow, send_slow in zip(range(self.num_clients), self.train_slow_clients, self.send_slow_clients):
+        for i, train_slow, send_slow, , train_malicious, train_random in zip(range(self.num_clients), self.train_slow_clients, self.send_slow_clients, self.train_malicious_clients, self.train_random_clients):
             train_data = read_client_data(self.dataset, i, is_train=True)
             test_data = read_client_data(self.dataset, i, is_train=False)
             client = clientObj(self.args, 
@@ -88,7 +98,9 @@ class Server(object):
                             train_samples=len(train_data), 
                             test_samples=len(test_data), 
                             train_slow=train_slow, 
-                            send_slow=send_slow)
+                            send_slow=send_slow,
+                            train_malicious=train_malicious,
+                            train_random=train_random)
             self.clients.append(client)
 
     # random select slow clients
@@ -106,6 +118,34 @@ class Server(object):
             self.train_slow_rate)
         self.send_slow_clients = self.select_slow_clients(
             self.send_slow_rate)
+
+    # random select malicious clients
+    def select_malicious_clients(self, malicious_num):
+        malicious_clients = [False for i in range(self.num_clients)]
+        idx = [i for i in range(self.num_clients)]
+        idx_ = np.random.choice(idx, malicious_num)
+        for i in idx_:
+            malicious_clients[i] = True
+
+        return malicious_clients
+
+    # random select free-rider clients
+    def select_random_clients(self, random_update):
+        random_clients = [False for i in range(self.num_clients)]
+        idx = [i for i in range(self.num_clients)]
+        idx_ = np.random.choice(idx, random_update)
+        for i in idx_:
+            random_clients[i] = True
+
+        return random_clients
+
+    def set_malicious_clients(self):
+        self.train_malicious_clients = self.select_malicious_clients(
+            self.malicious_num)
+
+    def set_random_clients(self):
+        self.train_random_clients = self.select_random_clients(
+            self.random_update)
 
     def select_clients(self):
         if self.random_join_ratio:
@@ -216,12 +256,14 @@ class Server(object):
         tot_correct = []
         tot_auc = []
         for c in self.clients:
-            ct, ns, auc = c.test_metrics()
-            tot_correct.append(ct*1.0)
-            tot_auc.append(auc*ns)
-            num_samples.append(ns)
+            if c.id in self.benign_clients:#only benign clients
+                ct, ns, auc = c.test_metrics()
+                tot_correct.append(ct*1.0)
+                tot_auc.append(auc*ns)
+                num_samples.append(ns)
 
-        ids = [c.id for c in self.clients]
+        ids = self.benign_clients
+        #ids = [c.id for c in self.clients]
 
         return ids, num_samples, tot_correct, tot_auc
 
@@ -232,11 +274,13 @@ class Server(object):
         num_samples = []
         losses = []
         for c in self.clients:
-            cl, ns = c.train_metrics()
-            num_samples.append(ns)
-            losses.append(cl*1.0)
+            if c.id in self.benign_clients:#only benign clients
+                cl, ns = c.train_metrics()
+                num_samples.append(ns)
+                losses.append(cl*1.0)
 
-        ids = [c.id for c in self.clients]
+        #ids = [c.id for c in self.clients]
+        ids = self.benign_clients
 
         return ids, num_samples, losses
 
@@ -266,7 +310,26 @@ class Server(object):
         print("Averaged Test AUC: {:.4f}".format(test_auc))
         # self.print_(test_acc, train_acc, train_loss)
         print("Std Test Accurancy: {:.4f}".format(np.std(accs)))
+        print("Cosine Fairness: {:.4f}".format(self.cosine_fairness(accs)))
+        print("Clinets Test Accurancy: {}".format(accs))
         print("Std Test AUC: {:.4f}".format(np.std(aucs)))
+
+    def cosine_fairness(self, accs):
+        # 将列表转换为NumPy数组
+        v1 = np.array(accs)
+        v2 = np.ones_like(accs)
+
+        # 计算向量的内积
+        dot_product = np.dot(v1, v2)
+
+        # 计算向量的模长
+        norm1 = np.linalg.norm(v1)
+        norm2 = np.linalg.norm(v2)
+
+        # 计算余弦相似度
+        cosine_sim = dot_product / (norm1 * norm2)
+
+        return cosine_sim
 
     def print_(self, test_acc, test_auc, train_loss):
         print("Average Test Accurancy: {:.4f}".format(test_acc))
@@ -346,7 +409,9 @@ class Server(object):
                             train_samples=len(train_data), 
                             test_samples=len(test_data), 
                             train_slow=False, 
-                            send_slow=False)
+                            send_slow=False,
+                            train_malicious=False,
+                            train_random=False)
             self.new_clients.append(client)
 
     # fine-tuning on new clients
