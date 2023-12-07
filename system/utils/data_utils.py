@@ -101,3 +101,28 @@ def read_client_data_shakespeare(dataset, idx, is_train=True):
         test_data = [(x, y) for x, y in zip(X_test, y_test)]
         return test_data
 
+def read_malicious_client_data(dataset, idx, is_train=True):
+    if dataset[:2] == "ag" or dataset[:2] == "SS":
+        return read_client_data_text(dataset, idx, is_train)
+    elif dataset[:2] == "sh":
+        return read_client_data_shakespeare(dataset, idx)
+
+    if is_train:
+        train_data = read_data(dataset, idx, is_train)
+        X_train = torch.Tensor(train_data['x']).type(torch.float32)
+        y_train = torch.Tensor(train_data['y']).type(torch.int64)
+        if dataset in ['fmnist', 'mnist','Cifar10']:
+            y_train = torch.randint(0, 10, size=(len(y_train),)).type(torch.int64)
+        #differnt label poisoning for different datasets:
+        # elif dataset == 'celeba':
+        #     y_train = 1 - y_train
+        # elif dataset == 'femnist':
+        #     y_train = torch.randint(0, 62, size=(len(y_train),)).type(torch.int64)  # [0, 62)
+        # elif dataset == 'shakespeare':
+        #     y_train = torch.randint(0, 80, size=(len(y_train),)).type(torch.int64)
+        # elif dataset == "vehicle":
+        #     y_train = -1 * y_train
+        train_data = [(x, y) for x, y in zip(X_train, y_train)]
+        return train_data
+
+
