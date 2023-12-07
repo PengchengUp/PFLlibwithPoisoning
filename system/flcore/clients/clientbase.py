@@ -55,6 +55,8 @@ class Client(object):
 
         self.train_slow = kwargs['train_slow']
         self.send_slow = kwargs['send_slow']
+        self.train_malicious = kwargs['train_malicious']
+        self.train_random = kwargs['train_random']
         self.train_time_cost = {'num_rounds': 0, 'total_cost': 0.0}
         self.send_time_cost = {'num_rounds': 0, 'total_cost': 0.0}
 
@@ -81,7 +83,22 @@ class Client(object):
             batch_size = self.batch_size
         test_data = read_client_data(self.dataset, self.id, is_train=False)
         return DataLoader(test_data, batch_size, drop_last=False, shuffle=True)
-        
+
+    def load_malicious_train_data(self, batch_size=None):
+        if batch_size == None:
+            batch_size = self.batch_size
+        train_data = read_malicious_client_data(self.dataset, self.id, is_train=True)
+        return DataLoader(train_data, batch_size, drop_last=True, shuffle=False)
+
+    def random_update(self, model):
+        for param in model.parameters():
+            var = torch.var(param.data)
+            random_data = torch.from_numpy(np.random.normal(0, var.item(), size=param.data.shape)).float()
+            random_data = random_data.to(param.data.device)
+            param.data.add_(random_data)
+
+        return model
+
     def set_parameters(self, model):
         for new_param, old_param in zip(model.parameters(), self.model.parameters()):
             old_param.data = new_param.data.clone()
