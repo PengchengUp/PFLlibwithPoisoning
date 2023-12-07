@@ -1,7 +1,7 @@
-# Add data and model poisoning attacks funnction for PFLlib project
+# Add data and model poisoning attacks funnctions and our novel PFL algorithm CosPer
 
-#Ddescription of the original PFLlib project
-# PFLlib: Personalized Federated Learning Algorithm Library
+# Description of the original PFLlib project
+## PFLlib: Personalized Federated Learning Algorithm Library
 
 [![DOI](https://zenodo.org/badge/292225878.svg)](https://zenodo.org/doi/10.5281/zenodo.7780679) [![License: GPL v2](https://img.shields.io/badge/License-GPL_v2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
@@ -27,9 +27,9 @@ The origin of the **statistical heterogeneity** phenomenon is the personalizatio
 Thanks to [@Stonesjtu](https://github.com/Stonesjtu/pytorch_memlab/blob/d590c489236ee25d157ff60ecd18433e8f9acbe3/pytorch_memlab/mem_reporter.py#L185), this library can also record the **GPU memory usage** for the model. By using the package [opacus](https://opacus.ai/), we introduce **DP (differential privacy)** into this library (please refer to `./system/flcore/clients/clientavg.py` for example). We also introduce the **[DLG (Deep Leakage from Gradients)](https://papers.nips.cc/paper_files/paper/2019/hash/60a6c4002cc7b29142def8871531281a-Abstract.html) attack** and **PSNR (Peak Signal-to-Noise Ratio) metric** to evaluate the privacy-preserving ability of tFL/pFL algorithms (please refer to `./system/flcore/servers/serveravg.py` for example). *Now we can train on some clients and evaluate on other new clients by setting `args.num_new_clients` in `./system/main.py`. Note that not all the tFL/pFL algorithms support this feature.*
 
 
-## Algorithms with code (updating)
+### Algorithms with code (updating)
 
-> ### Traditional FL (tFL)
+> #### Traditional FL (tFL)
 
 - **FedAvg** — [Communication-Efficient Learning of Deep Networks from Decentralized Data](http://proceedings.mlr.press/v54/mcmahan17a.html) *AISTATS 2017*
 
@@ -51,7 +51,7 @@ Thanks to [@Stonesjtu](https://github.com/Stonesjtu/pytorch_memlab/blob/d590c489
 - **FedGen** — [Data-Free Knowledge Distillation for Heterogeneous Federated Learning](http://proceedings.mlr.press/v139/zhu21b.html) *ICML 2021*
 - **FedNTD** — [Preservation of the Global Knowledge by Not-True Distillation in Federated Learning](https://proceedings.neurips.cc/paper_files/paper/2022/hash/fadec8f2e65f181d777507d1df69b92f-Abstract-Conference.html) *NeurIPS 2022*
 
-> ### Personalized FL (pFL)
+> #### Personalized FL (pFL)
 
 - **FedMTL (not MOCHA)** — [Federated multi-task learning](https://papers.nips.cc/paper/2017/hash/6211080fa89981f66b1a0c9d55c61d0f-Abstract.html) *NeurIPS 2017*
 - **FedBN** — [FedBN: Federated Learning on non-IID Features via Local Batch Normalization](https://openreview.net/forum?id=6YEQUn0QICG) *ICLR 2021*
@@ -96,7 +96,7 @@ Thanks to [@Stonesjtu](https://github.com/Stonesjtu/pytorch_memlab/blob/d590c489
 - **FedPCL (w/o pre-trained models)** — [Federated learning from pre-trained models: A contrastive learning approach](https://proceedings.neurips.cc/paper_files/paper/2022/file/7aa320d2b4b8f6400b18f6f77b6c1535-Paper-Conference.pdf) *NeurIPS 2022* 
 - **FedPAC** — [Personalized Federated Learning with Feature Alignment and Classifier Collaboration](https://openreview.net/pdf?id=SXZr8aDKia) *ICLR 2023*
 
-## Datasets and scenarios (updating)
+### Datasets and scenarios (updating)
 For the ***label skew*** scenario, we introduce **8** famous datasets: **MNIST**, **Fashion-MNIST**, **Cifar10**, **Cifar100**, **AG_News**, **Sogou_News**, and **Tiny-ImageNet** (fetch raw data from [this site](http://cs231n.stanford.edu/tiny-imagenet-200.zip)), they can be easy split into **IID** and **non-IID** version. Since some codes for generating datasets such as splitting are the same for all datasets, we move these codes into `./dataset/utils/dataset_utils.py`. In **non-IID** scenario, 2 situations exist. The first one is the **pathological non-IID** scenario, the second one is **practical non-IID** scenario. In the **pathological non-IID** scenario, for example, the data on each client only contains the specific number of labels (maybe only 2 labels), though the data on all clients contains 10 labels such as MNIST dataset. In the **practical non-IID** scenario, Dirichlet distribution is utilized (please refer to this [paper](https://proceedings.neurips.cc/paper/2020/hash/18df51b97ccd68128e994804f3eccc87-Abstract.html) for details). We can input `balance` for the iid scenario, where the data are uniformly distributed. 
 
 For the ***feature shift*** scenario, we use **3** datasets that are widely used in Domain Adaptation: **AmazonReview** (fetch raw data from [this site](https://drive.google.com/file/d/1QbXFENNyqor1IlCpRRFtOluI2_hMEd1W/view?usp=sharing)), **Digit5** (fetch raw data from [this site](https://drive.google.com/file/d/1PT6K-_wmsUEUCxoYzDy0mxF-15tvb2Eu/view?usp=share_link)), and **DomainNet**.
@@ -105,7 +105,7 @@ For the ***real-world (or IoT)*** scenario, we also introduce **3** naturally se
 
 *If you need another data set, just write another code to download it and then using the utils.*
 
-### Examples for **MNIST**
+#### Examples for **MNIST**
 - MNIST
     ```
     cd ./dataset
@@ -612,7 +612,7 @@ Client 2         Samples of labels:  [(0, 75), (1, 107), (3, 130), (7, 291), (8,
     Finish generating dataset.
 </details>
 
-## Models
+### Models
 - for MNIST and Fashion-MNIST
 
     1. Mclr_Logistic(1\*28\*28)
@@ -645,7 +645,7 @@ Client 2         Samples of labels:  [(0, 75), (1, 107), (3, 130), (7, 291), (8,
 
     1. HARCNN() in [Convolutional neural networks for human activity recognition using mobile sensors](https://eudl.eu/pdf/10.4108/icst.mobicase.2014.257786)
 
-## Environments
+### Environments
 Install [CUDA](https://developer.nvidia.com/cuda-11-6-0-download-archive). 
 
 Install [conda](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh) and activate conda. 
@@ -654,7 +654,7 @@ Install [conda](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_
 conda env create -f env_cuda_latest.yaml # You may need to downgrade the torch using pip to match CUDA version
 ```
 
-## How to start simulating (examples for FedAvg)
+### How to start simulating (examples for FedAvg)
 
 - Create proper environments (see [Environments](#environments)).
 
@@ -678,14 +678,14 @@ conda env create -f env_cuda_latest.yaml # You may need to downgrade the torch u
 
 **Note**: The hyper-parameters have not been tuned for the algorithms. The values in `./system/examples.sh` are just examples. You need to tune the hyper-parameters by yourself. 
 
-## Practical situations
+### Practical situations
 If you need to simulate FL under practical situations, which includes **client dropout**, **slow trainers**, **slow senders**, and **network TTL**, you can set the following parameters to realize it.
 
 - `-cdr`: The dropout rate for total clients. The selected clients will randomly drop at each training round.
 - `-tsr` and `-ssr`: The rates for slow trainers and slow senders among all clients. Once a client was selected as "slow trainers", for example, it will always train slower than the original one. So does "slow senders". 
 - `-tth`: The threshold for network TTL (ms). 
 
-## Easy to extend
+### Easy to extend
 It is easy to add new algorithms and datasets to this library. 
 
 - To add a **new dataset** into this library, all you need to do is writing the download code and using the utils which is similar to `./dataset/generate_mnist.py` (you can also consider it as the template). 
@@ -699,7 +699,7 @@ It is easy to add new algorithms and datasets to this library.
 - The evaluation platform is also convenient for users to bulid a new platform for specific applications, such as our [FL-IoT](https://github.com/TsingZ0/FL-IoT) and [HtFL](https://github.com/TsingZ0/HtFL). 
 
 
-## Experimental results
+### Experimental results
 
 If you are interested in **the experimental results (e.g., the accuracy) of above algorithms**, you can find some results in our accepted FL papers (i.e., [FedALA](https://github.com/TsingZ0/FedALA), [FedCP](https://github.com/TsingZ0/FedCP), [GPFL](https://github.com/TsingZ0/GPFL), and [DBE](https://github.com/TsingZ0/DBE)) listed as follows that also use this library. *Please note that this developing project may not be able to reproduce the results on these papers, since some basic settings may change due to the requests of the community. For example, we previously set `shuffle=False` in clientbase.py* 
 
