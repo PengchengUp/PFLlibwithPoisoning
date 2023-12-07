@@ -36,6 +36,7 @@ from flcore.servers.servermtl import FedMTL
 from flcore.servers.serverlocal import Local
 from flcore.servers.serverper import FedPer
 from flcore.servers.serverapfl import APFL
+from flcore.servers.servercosper import CosPer
 from flcore.servers.serverditto import Ditto
 from flcore.servers.serverrep import FedRep
 from flcore.servers.serverphp import FedPHP
@@ -224,6 +225,9 @@ def run(args):
 
         elif args.algorithm == "APFL":
             server = APFL(args, i)
+
+        elif args.algorithm == "CosPer":
+            server = CosPer(args, i)
 
         elif args.algorithm == "FedPer":
             args.head = copy.deepcopy(args.model.fc)
@@ -419,6 +423,12 @@ if __name__ == "__main__":
                         help="Rate for clients that train but drop out")
     parser.add_argument('-tsr', "--train_slow_rate", type=float, default=0.0,
                         help="The rate for slow clients when training locally")
+    #whether malicious clients
+    parser.add_argument('-malicious', "--malicious_num", type=int, default=0,
+                        help="The number of malicious clients(label posoning)")
+    parser.add_argument('-random', "--random_update", type=int, default=0,
+                        help="The number of malicious clients(free rider)")
+    
     parser.add_argument('-ssr', "--send_slow_rate", type=float, default=0.0,
                         help="The rate for slow clients when sending global model")
     parser.add_argument('-ts', "--time_select", type=bool, default=False,
