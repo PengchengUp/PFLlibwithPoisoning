@@ -163,21 +163,41 @@ def run(args):
             # args.model.fc = nn.Linear(feature_dim, args.num_classes).to(args.device)
             
         elif model_str == "lstm":
+            if args.dataset[:2] == "ag": #for agnews dataset
+                vocab_size=98635
+            elif args.dataset[:2] == "so": #for sogounews dataset
+                vocab_size=399198
             args.model = LSTMNet(hidden_dim=emb_dim, vocab_size=vocab_size, num_classes=args.num_classes).to(args.device)
 
         elif model_str == "bilstm":
+            if args.dataset[:2] == "ag":
+                vocab_size=98635
+            elif args.dataset[:2] == "so":
+                vocab_size=399198
             args.model = BiLSTM_TextClassification(input_size=vocab_size, hidden_size=emb_dim, output_size=args.num_classes, 
                         num_layers=1, embedding_dropout=0, lstm_dropout=0, attention_dropout=0, 
                         embedding_length=emb_dim).to(args.device)
 
         elif model_str == "fastText":
+            if args.dataset[:2] == "ag":
+                vocab_size=98635
+            elif args.dataset[:2] == "so":
+                vocab_size=399198
             args.model = fastText(hidden_dim=emb_dim, vocab_size=vocab_size, num_classes=args.num_classes).to(args.device)
 
         elif model_str == "TextCNN":
+            if args.dataset[:2] == "ag":
+                vocab_size=98635
+            elif args.dataset[:2] == "so":
+                vocab_size=399198
             args.model = TextCNN(hidden_dim=emb_dim, max_len=max_len, vocab_size=vocab_size, 
                             num_classes=args.num_classes).to(args.device)
 
         elif model_str == "Transformer":
+            if args.dataset[:2] == "ag":
+                vocab_size=98635
+            elif args.dataset[:2] == "so":
+                vocab_size=399198
             args.model = TransformerModel(ntoken=vocab_size, d_model=emb_dim, nhead=8, d_hid=emb_dim, nlayers=2, 
                             num_classes=args.num_classes).to(args.device)
         
