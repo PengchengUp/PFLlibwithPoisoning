@@ -123,6 +123,7 @@ class Server(object):
     def select_malicious_clients(self, malicious_num):
         malicious_clients = [False for i in range(self.num_clients)]
         idx = [i for i in range(self.num_clients)]
+        np.random.seed(0)
         idx_ = np.random.choice(idx, malicious_num)
         for i in idx_:
             malicious_clients[i] = True
@@ -133,6 +134,7 @@ class Server(object):
     def select_random_clients(self, random_update):
         random_clients = [False for i in range(self.num_clients)]
         idx = [i for i in range(self.num_clients)]
+        np.random.seed(0)
         idx_ = np.random.choice(idx, random_update)
         for i in idx_:
             random_clients[i] = True
